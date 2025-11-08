@@ -1,0 +1,10 @@
+1. 
+If there are bits that do't match any codewords in the look_up table,those bits will remain in the reg and FSM will ask for new bits to shift_Buff.
+However,the shift_buf is loading new bits to upper positions of shift_buf.
+For example, when there is 1111 in reg in this format 000001111,shift_buf load new bits(1100) in this way "0(1100)(1111)".
+As you know,FSM read from MSB to LSB and meaning it is going to read 0 first and shift the buffer so that content of buffer becomes 110011110.
+
+2.
+Shifting is also producing fake zeros.As we know whenever we shift something to left, the copies of Least significant bit gets pumped from right side.
+Before shifting          after shifting
+101110001                011100011
