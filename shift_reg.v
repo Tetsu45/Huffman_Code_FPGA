@@ -75,10 +75,10 @@ always @(posedge clk or posedge reset) begin
         // Load new bits (append to LSB side)
         if (load_bits && (bit_count + in_len <= MAX_CODE)) begin
             // shift existing bits upward, make room for new bits at LSB
-            shift_buf <= shift_buf | (in_bits << bit_count);
+            shift_buf <= (shift_buf << in_len) | in_bits;
             bit_count <= bit_count + in_len;
         end
-        // Shift bits out (remove from LSB side)
+        // Shift bits out (remove from MSB side)
         else if (shift_en && (bit_count >= shift_len)) begin
             shift_buf <= shift_buf << shift_len;
             bit_count <= bit_count - shift_len;
