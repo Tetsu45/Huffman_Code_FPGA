@@ -8,3 +8,159 @@ As you know,FSM read from MSB to LSB and meaning it is going to read 0 first and
 Shifting is also producing fake zeros.As we know whenever we shift something to left, the copies of Least significant bit gets pumped from right side.
 Before shifting          after shifting
 101110001                011100011
+
+
+here are the possible solutions we thinking about the casez problem;
+1. how about we arrange the code so that the longest symbols are decoded first then in that order to the lowest ?
+if (bit_count >= 1) begin
+            casez (valid_window)
+                9'b111110011: if (bit_count >= 9) begin match_flag_comb=1; match_symbol_comb= 4'sd7;  match_len_comb=9; end
+                9'b111110010: if (bit_count >= 9) begin match_flag_comb=1; match_symbol_comb=-4'sd8; match_len_comb=9; end
+                9'b11111000?: if (bit_count >= 8) begin match_flag_comb=1; match_symbol_comb=-4'sd7; match_len_comb=8; end
+                9'b1111101??: if (bit_count >= 7) begin match_flag_comb=1; match_symbol_comb= 4'sd5; match_len_comb=7; end
+                9'b1011001??: if (bit_count >= 7) begin match_flag_comb=1; match_symbol_comb= 4'sd6; match_len_comb=7; end
+                9'b1011000??: if (bit_count >= 7) begin match_flag_comb=1; match_symbol_comb=-4'sd6; match_len_comb=7; end
+                9'b101101???: if (bit_count >= 6) begin match_flag_comb=1; match_symbol_comb=-4'sd5; match_len_comb=6; end
+                9'b111111???: if (bit_count >= 6) begin match_flag_comb=1; match_symbol_comb= 4'sd4; match_len_comb=6; end
+                9'b10111????: if (bit_count >= 5) begin match_flag_comb=1; match_symbol_comb=-4'sd4; match_len_comb=5; end
+                9'b11110????: if (bit_count >= 5) begin match_flag_comb=1; match_symbol_comb= 4'sd3; match_len_comb=5; end
+                9'b1010?????: if (bit_count >= 4) begin match_flag_comb=1; match_symbol_comb=-4'sd3; match_len_comb=4; end
+                9'b1101?????: if (bit_count >= 4) begin match_flag_comb=1; match_symbol_comb=-4'sd2; match_len_comb=4; end
+                9'b1100?????: if (bit_count >= 4) begin match_flag_comb=1; match_symbol_comb= 4'sd2; match_len_comb=4; end
+                9'b1110?????: if (bit_count >= 4) begin match_flag_comb=1; match_symbol_comb=-4'sd1; match_len_comb=4; end
+                9'b100??????: if (bit_count >= 3) begin match_flag_comb=1; match_symbol_comb= 4'sd1; match_len_comb=3; end
+                9'b0????????: if (bit_count >= 1) begin match_flag_comb=1; match_symbol_comb= 4'sd0; match_len_comb=1; end
+                default: ;
+            endcase
+        end
+    end
+
+
+2. how about we grpup them so the case z is in the form of code length like the one below - here we deal with the length 
+ I do like this one though I think its cleaner and we dont have to deal with dont cares 
+
+        // ===================================================
+        // CRITICAL: Check bit_count >= required length FIRST
+        // ===================================================
+        
+        // 1-bit codes (need at least 1 bit)
+        if (bit_count >= 1 && shift_buf[8] == 1'b0) begin
+            match_flag   = 1'b1;
+            match_symbol = 4'sd0;
+            match_len    = 4'd1;
+        end
+        
+        // 3-bit codes (need at least 3 bits)
+        else if (bit_count >= 3 && shift_buf[8:6] == 3'b100) begin
+            match_flag   = 1'b1;
+            match_symbol = 4'sd1;
+            match_len    = 4'd3;
+        end
+        
+        // 4-bit codes (need at least 4 bits)
+        else if (bit_count >= 4) begin
+            case (shift_buf[8:5])
+                4'b1010: begin match_flag=1'b1; match_symbol=-4'sd3; match_len=4'd4; end
+                4'b1100: begin match_flag=1'b1; match_symbol= 4'sd2; match_len=4'd4; end
+                4'b1101: begin match_flag=1'b1; match_symbol=-4'sd2; match_len=4'd4; end
+                4'b1110: begin match_flag=1'b1; match_symbol=-4'sd1; match_len=4'd4; end
+                default: match_flag = 1'b0;
+            endcase
+        end
+        
+        // 5-bit codes (need at least 5 bits) - Check BEFORE 4-bit partial matches
+        if (!match_flag && bit_count >= 5) begin
+            case (shift_buf[8:4])
+                5'b10111: begin match_flag=1'b1; match_symbol=-4'sd4; match_len=4'd5; end
+                5'b11110: begin match_flag=1'b1; match_symbol= 4'sd3; match_len=4'd5; end
+                default: match_flag = 1'b0;
+            endcase
+        end
+        
+        // 6-bit codes (need at least 6 bits)
+        if (!match_flag && bit_count >= 6) begin
+            case (shift_buf[8:3])
+                6'b101101: begin match_flag=1'b1; match_symbol=-4'sd5; match_len=4'd6; end
+                6'b111111: begin match_flag=1'b1; match_symbol= 4'sd4; match_len=4'd6; end
+                default: match_flag = 1'b0;
+            endcase
+        end
+        
+        // 7-bit codes (need at least 7 bits)
+        if (!match_flag && bit_count >= 7) begin
+            case (shift_buf[8:2])
+                7'b1011000: begin match_flag=1'b1; match_symbol=-4'sd6; match_len=4'd7; end
+                7'b1011001: begin match_flag=1'b1; match_symbol= 4'sd6; match_len=4'd7; end
+                7'b1111101: begin match_flag=1'b1; match_symbol= 4'sd5; match_len=4'd7; end
+                default: match_flag = 1'b0;
+            endcase
+        end
+        
+        // 8-bit codes (need at least 8 bits)
+        if (!match_flag && bit_count >= 8) begin
+            if (shift_buf[8:1] == 8'b11111000) begin
+                match_flag   = 1'b1;
+                match_symbol = -4'sd7;
+                match_len    = 4'd8;
+            end
+        end
+        
+        // 9-bit codes (need exactly 9 bits)
+        if (!match_flag && bit_count >= 9) begin
+            case (shift_buf[8:0])
+                9'b111110010: begin match_flag=1'b1; match_symbol=-4'sd8; match_len=4'd9; end
+                9'b111110011: begin match_flag=1'b1; match_symbol= 4'sd7; match_len=4'd9; end
+                default: match_flag = 1'b0;
+            endcase
+        end
+    end
+
+3. Dynamic Table-Driven Huffman Decoder format. This I think would be hard to implement though we can try as it looks easier perhaps to use and not cause many issues but implementation might not be easy. 
+Also I dont think the professor would like this 
+
+Each symbol and its Huffman code are stored in small ROM arrays:
+
+code_table[i] → bit pattern
+
+code_len[i] → number of bits in pattern
+
+symbol_table[i] → signed 4-bit decoded value
+
+At runtime, the FSM takes the valid_window (top bit_count bits) and compares i
+
+    // =====================================================
+    // Step 1 — Code tables (symbol, code, length)
+    // =====================================================
+    reg [MAX_CODE-1:0] code_table [0:TABLE_SIZE-1];
+    reg [3:0]           code_len   [0:TABLE_SIZE-1];
+    reg signed [3:0]    symbol_table[0:TABLE_SIZE-1];
+
+    integer i;
+    initial begin
+        // symbol → code → length
+        symbol_table[0]  = -8; code_table[0]  = 9'b111110010; code_len[0] = 9;
+        symbol_table[1]  =  7; code_table[1]  = 9'b111110011; code_len[1] = 9;
+        symbol_table[2]  = -7; code_table[2]  = 9'b11111000;  code_len[2] = 8;
+        symbol_table[3]  =  6; code_table[3]  = 9'b1011001;   code_len[3] = 7;
+        symbol_table[4]  = -6; code_table[4]  = 9'b1011000;   code_len[4] = 7;
+        symbol_table[5]  =  5; code_table[5]  = 9'b1111101;   code_len[5] = 7;
+        symbol_table[6]  = -5; code_table[6]  = 9'b101101;    code_len[6] = 6;
+        symbol_table[7]  =  4; code_table[7]  = 9'b111111;    code_len[7] = 6;
+        symbol_table[8]  = -4; code_table[8]  = 9'b10111;     code_len[8] = 5;
+        symbol_table[9]  =  3; code_table[9]  = 9'b11110;     code_len[9] = 5;
+        symbol_table[10] = -3; code_table[10] = 9'b1010;      code_len[10]= 4;
+        symbol_table[11] = -2; code_table[11] = 9'b1101;      code_len[11]= 4;
+        symbol_table[12] =  2; code_table[12] = 9'b1100;      code_len[12]= 4;
+        symbol_table[13] = -1; code_table[13] = 9'b1110;      code_len[13]= 4;
+        symbol_table[14] =  1; code_table[14] = 9'b100;       code_len[14]= 3;
+        symbol_table[15] =  0; code_table[15] = 9'b0;         code_len[15]= 1;
+    end
+
+    // =====================================================
+    // Step 2 — Matching logic
+    // =====================================================
+    reg match_found;
+    reg [3:0] match_len;
+    reg signed [3:0] match_symbol;
+
+    wire [MAX_CODE-1:0] valid_window = shift_buf << (MAX_CODE - bit_count);
