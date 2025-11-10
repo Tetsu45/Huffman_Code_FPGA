@@ -1,74 +1,120 @@
-
 //============================================================
-// shift_reg.v — Compatible with Optimized Decoder FSM
+// shift_reg.v — Top-level with internal FSM instantiation
 //============================================================
+`timescale 1ns/1ps
 module shift_reg #(
-    parameter MAX_CODE = 9
+    parameter MAX_CODE = 9,
+    parameter MIN_SAFE_BITS = 3
 )(
     input  wire             clk,
     input  wire             reset,
-
-    // Load bits from input source
-    input  wire             load_bits,       // FSM pulse to append new bits
-    input  wire [3:0]       in_bits,         // up to 4 bits from stream (LSB = newest)
-    input  wire [2:0]       in_len,          // number of valid bits in in_bits
-
-    // Remove bits after successful decode
-    input  wire             shift_en,        // FSM pulse to drop matched bits
-    input  wire [3:0]       shift_len,       // number of bits to remove
-
-    // Outputs
-    output reg [MAX_CODE-1:0] shift_buf,     // buffer content for case_decoder
-    output reg [3:0]          bit_count      // how many bits are valid
+    input  wire [3:0]       in_bits,
+    input  wire [2:0]       in_len,
+    input  wire             sValid,
+    // Final decoded outputs
+    output reg  signed [3:0] decodedData,
+    output wire             tvalid
+    //output reg               buffer_ready
 );
+    //--------------------------------------------------------
+    // Internal signals
+    //--------------------------------------------------------
+    reg  [MAX_CODE-1:0] shift_buf;
+    reg  [3:0]          bit_count;
+    wire                load_bits;
+    wire                shift_en;
+    wire [3:0]          shift_len;
+    wire                aready;
 
- always @(posedge clk or posedge reset) begin
+    // internal handshake and match info
+    wire match_flag;
+    wire signed [3:0] match_symbol;
+    wire [3:0] match_len;
+    wire fsm_tvalid; 
+    wire fsm_svalid;
+
+    assign fsm_svalid = sValid;
+
+    //--------------------------------------------------------
+    // FSM Instantiation
+    //--------------------------------------------------------
+    decoder_fsm #(
+        .MAX_CODE(MAX_CODE)
+    ) u_fsm (
+        .clk(clk),
+        .reset(reset),
+        .svalid(fsm_svalid),
+        .in_data(in_bits),
+        .in_len(in_len),
+        .aready(aready),
+        .load_bits(load_bits),
+        .shift_en(shift_en),
+        .shift_len(shift_len),
+        .shift_buf(shift_buf),
+        .bit_count(bit_count),
+        .decodedData(match_symbol),
+        .tvalid(fsm_tvalid)
+    );
+
+    //--------------------------------------------------------
+    // Valid Window (Aligned Bit View)
+    //--------------------------------------------------------
+    reg [MAX_CODE-1:0] valid_window;
+
+    always @(*) begin
+        // Generate the left-aligned valid bits view (no false zeros)
+        valid_window = shift_buf << (MAX_CODE - bit_count);
+    end
+
+    //--------------------------------------------------------
+    // Shift Register Logic
+    //--------------------------------------------------------
+    integer i;
+    assign tvalid = fsm_tvalid;
+
+    // Mask to keep only 'in_len' valid bits
+    reg [MAX_CODE-1:0] in_masked;
+
+    // ==========================================================
+    // Barrel-shift style bit buffer (Quartus-safe Verilog-2001)
+    // ==========================================================
+    always @(posedge clk or posedge reset) begin
     if (reset) begin
-        shift_buf <= {MAX_CODE{1'b0}};
-        bit_count <= 4'd0;
+        shift_buf   <= {MAX_CODE{1'b0}};
+        bit_count   <= 0;
+        decodedData <= 0;
     end else begin
-        // --- Load new bits into the buffer ---
+        // -----------------------------
+        // Load new bits into buffer
+        // -----------------------------
         if (load_bits && (bit_count + in_len <= MAX_CODE)) begin
-            case (in_len)
-                3'd1: begin
-                    shift_buf <= (shift_buf << 1) | {8'd0, in_bits[0]};
-                    bit_count <= bit_count + 3'd1;
-                end
-                3'd2: begin
-                    shift_buf <= (shift_buf << 2) | {7'd0, in_bits[1:0]};
-                    bit_count <= bit_count + 3'd2;
-                end
-                3'd3: begin
-                    shift_buf <= (shift_buf << 3) | {6'd0, in_bits[2:0]};
-                    bit_count <= bit_count + 3'd3;
-                end
-                3'd4: begin
-                    shift_buf <= (shift_buf << 4) | {5'd0, in_bits[3:0]};
-                    bit_count <= bit_count + 3'd4;
-                end
-                default: begin
-                    // in_len = 0, do nothing
-                    shift_buf <= shift_buf;
-                    bit_count <= bit_count;
-                end
-            endcase
+            in_masked = in_bits & ((1 << in_len) - 1); // keep only valid input bits
+
+            if (bit_count == 0) begin
+                // Buffer empty → load at MSB downward
+                shift_buf <= in_masked << (MAX_CODE - in_len);
+            end else begin
+                // Buffer has bits → append after existing valid bits
+                // Existing bits occupy [MAX_CODE-1 : MAX_CODE-bit_count]
+                shift_buf <= shift_buf | (in_masked << (MAX_CODE - bit_count - in_len));
+            end
+
+            bit_count <= bit_count + in_len;
         end
-        // --- Shift out decoded bits ---
+
+        // -----------------------------
+        // Shift bits out (MSB side)
+        // -----------------------------
         else if (shift_en && (bit_count >= shift_len)) begin
-            case (shift_len)
-                4'd1: shift_buf <= shift_buf << 1;
-                4'd2: shift_buf <= shift_buf << 2;
-                4'd3: shift_buf <= shift_buf << 3;
-                4'd4: shift_buf <= shift_buf << 4;
-                4'd5: shift_buf <= shift_buf << 5;
-                4'd6: shift_buf <= shift_buf << 6;
-                4'd7: shift_buf <= shift_buf << 7;
-                4'd8: shift_buf <= shift_buf << 8;
-                4'd9: shift_buf <= shift_buf << 9;
-                default: shift_buf <= shift_buf;
-            endcase
+            shift_buf <= shift_buf << shift_len;
             bit_count <= bit_count - shift_len;
         end
+
+        // -----------------------------
+        // FSM decoded output latch
+        // -----------------------------
+        if (tvalid)
+            decodedData <= match_symbol;
     end
 end
 endmodule
