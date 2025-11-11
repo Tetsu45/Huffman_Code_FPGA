@@ -36,7 +36,8 @@ if (bit_count >= 1) begin
     end
 
 
-2. how about we grpup them so the case z is in the form of code length like the one below - here we deal with the length 
+2. how about we grpup them so the case z is in the form of code length like the one below - here we deal with the length (implemented this but i had to remove 
+bit_count >= 8 and replace with bit_count = 8 to avoid early decoding)
  I do like this one though I think its cleaner and we dont have to deal with dont cares 
 
         // ===================================================
