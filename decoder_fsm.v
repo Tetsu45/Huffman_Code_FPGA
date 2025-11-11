@@ -173,7 +173,7 @@ module decoder_fsm #(
             S_DECODE: begin
                 if (match_flag_reg)
                     next_state = S_SHIFT;
-                else if (!match_flag_reg && aready)
+                else if (!match_flag_reg && aready && svalid)
                     next_state = S_LOAD;
                 else
                     next_state = S_DECODE;
