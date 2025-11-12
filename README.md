@@ -23,7 +23,7 @@ Drives encoded input sequences, verifies all codewords (-8 → +7), and logs tim
 
                              shift_reg.v 
                              
-— Bitstream Buffer with Internal FSM
+- Bitstream Buffer with Internal FSM
 Functionality
 
 The shift_reg module acts as both the data path and control interface for the Huffman decoder.
@@ -54,4 +54,12 @@ Key Features
 | `tvalid`           | Output    | High when a decoded symbol is available |
 
 
+Also, It manages:
 
+-Bitstream pattern recognition
+
+-Bit-length checking (using bit_count)
+
+-Symbol decoding and match flag generation
+
+-Control of the shift register (load_bits, shift_en, and shift_len)
