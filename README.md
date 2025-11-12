@@ -2,7 +2,7 @@
 https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 #Overview
 
-This project implements a Huffman Decoder System usign  synthesizabl Verilog-2001 for simulation.
+This project implements a Huffman Decoder System usign  synthesizable Verilog-2001 for simulation.
 It provides a modular and reusable RTL architecture for decoding variable-length Huffman codes using a barrel-shift register (implemented in the shift_reg.v) controlled by a finite state machine (FSM).
 
 The system we used  accepts encoded bit sequences (1–4 bits at a time), aligns and buffers them internally, and then produces decoded symbols as output. 
@@ -41,7 +41,7 @@ Key Features
    -Parameterization via MAX_CODE (supports up to 9-bit Huffman codes)
 
    -FSM co-instantiation internally — fully encapsulated design
-
+https://github.com/Tetsu45/Huffman_Code_FPGA/blob/huffer_decoder_BarrelShfiter/README.md
 | Port               | Direction | Description                             |
 | ------------------ | --------- | --------------------------------------- |
 | `clk`, `reset`     | Input     | System clock and synchronous reset      |
