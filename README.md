@@ -38,8 +38,6 @@ Key Features
 
    -Barrel-Shift logic (synthesizable) for efficient bit movement
 
-   -Left-aligned valid window view for decoding accuracy
-
    -Parameterization via MAX_CODE (supports up to 9-bit Huffman codes)
 
    -FSM co-instantiation internally — fully encapsulated design
