@@ -146,3 +146,27 @@ Monitors all internal states, including:
    -bit_count
    -shift_en (FSM control signal)
    -decodedData and tvalid outputs
+
+
+
+          +--------------------+
+          |   Testbench (TB)   |
+          |  sends chunks      |
+          +--------------------+
+                    |
+                    v
+         +---------------------+
+         |    Shift Register   | <-----+
+         | shift_buf, bit_cnt  |       |
+         +---------------------+       |
+                    |                  |
+                    v                  |
+         +---------------------+       |
+         |    Decoder FSM      | ------+
+         | Match & Control     |
+         +---------------------+
+                    |
+                    v
+         +---------------------+
+         |  Decoded Symbol Out |
+         +---------------------+
