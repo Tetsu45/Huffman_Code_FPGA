@@ -1,5 +1,5 @@
 # Huffman_decoder_Code_FPGA
-https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
+
 #Overview
 
 This project implements a Huffman Decoder System usign  synthesizable Verilog-2001 for simulation.
@@ -41,7 +41,7 @@ Key Features
    -Parameterization via MAX_CODE (supports up to 9-bit Huffman codes)
 
    -FSM co-instantiation internally — fully encapsulated design
-https://github.com/Tetsu45/Huffman_Code_FPGA/blob/huffer_decoder_BarrelShfiter/README.md
+
 | Port               | Direction | Description                             |
 | ------------------ | --------- | --------------------------------------- |
 | `clk`, `reset`     | Input     | System clock and synchronous reset      |
