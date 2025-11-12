@@ -100,6 +100,14 @@ In essence it controls when to load input bits, when to attempt symbol decoding,
 | `S_SHIFT` | Shifts out the matched number of bits from the buffer. |
 | `S_OUTPUT` | Asserts `tvalid` and outputs the decoded symbol. |
 
+#### **Matching Logic**
+The FSM checks the most-significant bits of `shift_buf` (`shift_buf[8:0]`) based on how many bits are currently valid (`bit_count`):
+
+- **1-bit codes:** `0` → symbol `0`
+- **3-bit codes:** `100` → symbol `+1`
+- **4-bit codes:** multiple patterns like `1010`, `1100`, etc.
+- **5- to 9-bit codes:** for extended range symbols (−8 to +7)
+
         ┌─────────┐
         │  S_IDLE │◄────────────┐
         └────┬────┘             │
