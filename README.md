@@ -29,7 +29,7 @@ Functionality
 The shift_reg module acts as both the data path and control interface for the Huffman decoder.
 It buffers incoming 1–4 bits per clock cycle and coordinates with the FSM to:
 
- -Append new bits into the buffer (load_bits control)
+ -Append new bits starting from a MSB position into the buffer (load_bits control)
  -Remove bits once a valid symbol is decoded (shift_en control)
  -Maintain real-time count of valid bits (bit_count)
  -Forward decoded symbols (decodedData) with a valid handshake (tvalid)
