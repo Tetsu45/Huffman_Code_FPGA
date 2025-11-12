@@ -19,3 +19,39 @@ It analyzes buffered bits, detects valid Huffman codewords, issues shift control
 3. Testbench
 Drives encoded input sequences, verifies all codewords (-8 → +7), and logs timing and decoded outputs.
 
+## Module Description 
+
+                             shift_reg.v 
+                             
+— Bitstream Buffer with Internal FSM
+Functionality
+
+The shift_reg module acts as both the data path and control interface for the Huffman decoder.
+It buffers incoming 1–4 bits per clock cycle and coordinates with the FSM to:
+
+ -Append new bits into the buffer (load_bits control)
+ -Remove bits once a valid symbol is decoded (shift_en control)
+ -Maintain real-time count of valid bits (bit_count)
+ -Forward decoded symbols (decodedData) with a valid handshake (tvalid)
+
+Key Features
+
+   -Barrel-Shift logic (synthesizable) for efficient bit movement
+
+   -Left-aligned valid window view for decoding accuracy
+
+   -Parameterization via MAX_CODE (supports up to 9-bit Huffman codes)
+
+   -FSM co-instantiation internally — fully encapsulated design
+
+| Port               | Direction | Description                             |
+| ------------------ | --------- | --------------------------------------- |
+| `clk`, `reset`     | Input     | System clock and synchronous reset      |
+| `in_bits[3:0]`     | Input     | Incoming encoded bits                   |
+| `in_len[2:0]`      | Input     | Number of valid bits in `in_bits`       |
+| `sValid`           | Input     | Indicates valid data on `in_bits`       |
+| `decodedData[3:0]` | Output    | Final decoded symbol                    |
+| `tvalid`           | Output    | High when a decoded symbol is available |
+
+
+
