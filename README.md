@@ -52,7 +52,7 @@ Key Features
 | `tvalid`           | Output    | High when a decoded symbol is available |
 
 
-Also, It manages:
+Also, it manages:
 
 -Bitstream pattern recognition
 
@@ -61,3 +61,35 @@ Also, It manages:
 -Symbol decoding and match flag generation
 
 -Control of the shift register (load_bits, shift_en, and shift_len)
+
+┌─────────────────────────────────────────────────────────┐
+│                   Huffman Decoder Top                   │
+│                    (shift_reg.v)                        │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌──────────────┐      ┌──────────────────┐           │
+│  │   9-bit      │◄─────┤  Decoder FSM     │           │
+│  │ Shift Buffer │      │  (decoder_fsm.v) │           │
+│  │   (MSB-left) │      │                  │           │
+│  │              │──┐   │  • S_IDLE        │           │
+│  │ bit_count    │  │   │  • S_LOAD        │           │
+│  │ (4-bit ctr)  │  │   │  • S_DECODE      │           │
+│  └──────────────┘  │   │  • S_SHIFT       │           │
+│         ▲          │   │  • S_OUTPUT      │           │
+│         │          │   └──────────────────┘           │
+│    load_bits       │            │                      │
+│    shift_en        │      match_flag                   │
+│         │          │      match_symbol                 │
+│         │          └──────────►                        │
+│  ┌──────▼──────────────────────────────┐              │
+│  │  Combinational Huffman Decoder      │              │
+│  │  (case statements with bit-count    │              │
+│  │   awareness for 1-9 bit codes)      │              │
+│  └─────────────────────────────────────┘              │
+│                                                         │
+│  Inputs:                       Outputs:                │
+│  • clk, reset                  • decodedData [3:0]     │
+│  • in_bits [3:0]              • tvalid                 │
+│  • in_len [2:0]                                        │
+│  • sValid                                              │
+└─────────────────────────────────────────────────────────┘
