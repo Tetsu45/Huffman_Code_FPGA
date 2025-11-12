@@ -63,17 +63,43 @@ Also, it manages:
 -Control of the shift register (load_bits, shift_en, and shift_len)
 
 
+Bit Extraction Logic
+After a Huffman code match, the FSM shifts out decoded bits:
+
+else if (shift_en && (bit_count >= shift_len) && (shift_len != 0)) begin
+    shift_buf <= shift_buf << shift_len;
+    bit_count <= bit_count - shift_len;
+end
+```
+
+**Note**: The `else if` creates mutual exclusion between loading and shifting, preventing simultaneous operations in this implementation.
+
+---
 
 
 
 
+                  ### `decoder_fsm.v` - Control FSM
+
+**Purpose**: Orchestrates bit loading, Huffman matching, and symbol extraction via a finite state machine.
+In essence it controls when to load input bits, when to attempt symbol decoding, and when to output a valid decoded symbol.
 
 
+#### **Key Responsibilities**
+- Manage the handshake between input and the shift register.
+- Check the bit buffer against known Huffman codes.
+- Trigger shift operations when a valid match is detected.
+- Generate valid decoded symbols via the `tvalid` signal.
 
 
-
-
-
+#### **Internal FSM States**
+| State | Name | Description |
+|:------|:------|:-------------|
+| `S_IDLE` | Waits for valid input (`svalid=1`). |
+| `S_LOAD` | Loads a new chunk of bits into the shift register. |
+| `S_DECODE` | Continuously compares current bit window to known Huffman patterns. |
+| `S_SHIFT` | Shifts out the matched number of bits from the buffer. |
+| `S_OUTPUT` | Asserts `tvalid` and outputs the decoded symbol. |
 
         ┌─────────┐
         │  S_IDLE │◄────────────┐
@@ -84,7 +110,7 @@ Also, it manages:
     ┌──►│ S_DECODE│─────┐       │
     │   └────┬────┘     │       │
     │        │          │       │
-    │  match_flag       │ !match & aready
+    │  match_flag       │ !match & aready & svalid
     │        │          │       │
     │        ▼          ▼       │
     │   ┌─────────┐ ┌──────┐   │
