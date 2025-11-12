@@ -70,11 +70,10 @@ else if (shift_en && (bit_count >= shift_len) && (shift_len != 0)) begin
     shift_buf <= shift_buf << shift_len;
     bit_count <= bit_count - shift_len;
 end
-```
+
 
 **Note**: The `else if` creates mutual exclusion between loading and shifting, preventing simultaneous operations in this implementation.
 
----
 
 
 
