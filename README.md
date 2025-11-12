@@ -1,5 +1,6 @@
 # Huffman_decoder_Code_FPGA
-##Overview
+
+#Overview
 
 This project implements a Huffman Decoder System usign  synthesizabl Verilog-2001 for simulation.
 It provides a modular and reusable RTL architecture for decoding variable-length Huffman codes using a barrel-shift register (implemented in the shift_reg.v) controlled by a finite state machine (FSM).
