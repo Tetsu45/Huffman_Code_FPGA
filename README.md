@@ -78,7 +78,7 @@ end
 
 
 
-                  ### `decoder_fsm.v` - Control FSM
+                  decoder_fsm.v - Control FSM
 
 **Purpose**: Orchestrates bit loading, Huffman matching, and symbol extraction via a finite state machine.
 In essence it controls when to load input bits, when to attempt symbol decoding, and when to output a valid decoded symbol.
