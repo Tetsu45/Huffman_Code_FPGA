@@ -1,5 +1,5 @@
 # Huffman_decoder_Code_FPGA
-
+https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 #Overview
 
 This project implements a Huffman Decoder System usign  synthesizabl Verilog-2001 for simulation.
@@ -62,34 +62,48 @@ Also, it manages:
 
 -Control of the shift register (load_bits, shift_en, and shift_len)
 
-┌─────────────────────────────────────────────────────────┐
-│                   Huffman Decoder Top                   │
-│                    (shift_reg.v)                        │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────┐      ┌──────────────────┐           │
-│  │   9-bit      │◄─────┤  Decoder FSM     │           │
-│  │ Shift Buffer │      │  (decoder_fsm.v) │           │
-│  │   (MSB-left) │      │                  │           │
-│  │              │──┐   │  • S_IDLE        │           │
-│  │ bit_count    │  │   │  • S_LOAD        │           │
-│  │ (4-bit ctr)  │  │   │  • S_DECODE      │           │
-│  └──────────────┘  │   │  • S_SHIFT       │           │
-│         ▲          │   │  • S_OUTPUT      │           │
-│         │          │   └──────────────────┘           │
-│    load_bits       │            │                      │
-│    shift_en        │      match_flag                   │
-│         │          │      match_symbol                 │
-│         │          └──────────►                        │
-│  ┌──────▼──────────────────────────────┐              │
-│  │  Combinational Huffman Decoder      │              │
-│  │  (case statements with bit-count    │              │
-│  │   awareness for 1-9 bit codes)      │              │
-│  └─────────────────────────────────────┘              │
-│                                                         │
-│  Inputs:                       Outputs:                │
-│  • clk, reset                  • decodedData [3:0]     │
-│  • in_bits [3:0]              • tvalid                 │
-│  • in_len [2:0]                                        │
-│  • sValid                                              │
-└─────────────────────────────────────────────────────────┘
+
+
+
+// Barrel-shift style bit loading
+if (bit_count == 0) begin
+    shift_buf <= in_masked << (MAX_CODE - in_len);  // Left-align
+end else begin
+    shift_buf <= shift_buf | (in_masked << (MAX_CODE - bit_count - in_len));
+end
+```
+
+**Parameters**:
+| Parameter       | Default | Description                     |
+|-----------------|---------|---------------------------------|
+| `MAX_CODE`      | 9       | Maximum Huffman code length     |
+| `MIN_SAFE_BITS` | 3       | Unused (reserved for future)    |
+
+---
+
+### 2. `decoder_fsm.v` - Finite State Machine Controller
+
+**Purpose**: Coordinates bit loading, Huffman matching, and symbol extraction.
+
+#### State Machine
+```
+        ┌─────────┐
+        │  S_IDLE │◄────────────┐
+        └────┬────┘             │
+             │ svalid           │
+             ▼                  │
+        ┌─────────┐             │
+    ┌──►│ S_DECODE│─────┐       │
+    │   └────┬────┘     │       │
+    │        │          │       │
+    │  match_flag       │ !match & aready
+    │        │          │       │
+    │        ▼          ▼       │
+    │   ┌─────────┐ ┌──────┐   │
+    │   │ S_SHIFT │ │S_LOAD│───┘
+    │   └────┬────┘ └──────┘
+    │        │
+    │        ▼
+    │   ┌─────────┐
+    └───┤ S_OUTPUT│
+        └─────────┘<img width="849" height="655" alt="Screenshot 2025-11-06 140946" src="https://github.com/user-attachments/assets/eaa3e140-a87b-4a0c-9cfd-f9f7e779ae33" />
