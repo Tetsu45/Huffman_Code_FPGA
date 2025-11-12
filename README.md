@@ -132,3 +132,17 @@ The FSM checks the most-significant bits of `shift_buf` (`shift_buf[8:0]`) based
 - **3-bit codes:** `100` → symbol `+1`
 - **4-bit codes:** multiple patterns like `1010`, `1100`, etc.
 - **5- to 9-bit codes:** for extended range symbols (−8 to +7)
+
+                  tb_shift_reg.v
+
+The Testbench applies sequentially all known Huffman codewords (−8 to +7) to verify decoding correctness and handshake stability.
+
+   Test Sequence
+It applies 4-bit chunks to in_bits with controlled delays.
+It uses the task send_chunk(bits, len) to ensure consistent timing.
+
+Monitors all internal states, including:
+   -shift_buf
+   -bit_count
+   -shift_en (FSM control signal)
+   -decodedData and tvalid outputs
