@@ -102,11 +102,11 @@ In essence it controls when to load input bits, when to attempt symbol decoding,
 
 
         ┌─────────┐
-        │  S_IDLE │◄────────────┐
-        └────┬────┘             │
-             │ svalid           │
-             ▼                  │
-        ┌─────────┐             │
+        │  S_IDLE │
+        └────┬────┘             
+             │ svalid           
+             ▼                  
+        ┌─────────┐◄────────────┐             
     ┌──►│ S_DECODE│─────┐       │
     │   └────┬────┘     │       │
     │        │          │       │
