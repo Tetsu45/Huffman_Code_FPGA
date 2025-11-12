@@ -62,6 +62,19 @@ Also, it manages:
 
 -Control of the shift register (load_bits, shift_en, and shift_len)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
         ┌─────────┐
         │  S_IDLE │◄────────────┐
         └────┬────┘             │
@@ -83,6 +96,4 @@ Also, it manages:
     └───┤ S_OUTPUT│
         └─────────┘
         
-        <img width="849" height="655" alt="Screenshot 2025-11-06 140946" src="https://github.com/user-attachments/assets/eaa3e140-a87b-4a0c-9cfd-f9f7e779ae33" />
-
-![Huffman Decoder Simulation Screenshot](https://github.com/user-attachments/assets/eaa3e140-a87b-4a0c-9cfd-f9f7e779ae33)
+    
