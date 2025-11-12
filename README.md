@@ -62,31 +62,6 @@ Also, it manages:
 
 -Control of the shift register (load_bits, shift_en, and shift_len)
 
-
-
-
-// Barrel-shift style bit loading
-if (bit_count == 0) begin
-    shift_buf <= in_masked << (MAX_CODE - in_len);  // Left-align
-end else begin
-    shift_buf <= shift_buf | (in_masked << (MAX_CODE - bit_count - in_len));
-end
-```
-
-**Parameters**:
-| Parameter       | Default | Description                     |
-|-----------------|---------|---------------------------------|
-| `MAX_CODE`      | 9       | Maximum Huffman code length     |
-| `MIN_SAFE_BITS` | 3       | Unused (reserved for future)    |
-
----
-
-### 2. `decoder_fsm.v` - Finite State Machine Controller
-
-**Purpose**: Coordinates bit loading, Huffman matching, and symbol extraction.
-
-#### State Machine
-```
         ┌─────────┐
         │  S_IDLE │◄────────────┐
         └────┬────┘             │
