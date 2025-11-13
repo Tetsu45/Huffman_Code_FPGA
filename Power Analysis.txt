@@ -9,3 +9,23 @@ FMax value
 +------------+-----------------+------------+------+
 This panel reports FMAX for every clock in the design, regardless of the user-specified clock periods.  FMAX is only computed for paths where the source and destination registers or ports are driven by the same clock.  Paths of different clocks, including generated clocks, are ignored.  For paths between a clock and its inversion, FMAX is computed as if the rising and falling edges are scaled along with FMAX, such that the duty cycle (in terms of a percentage) is maintained. Altera recommends that you always use clock constraints and other slack reports for sign-off analysis.
 
+2. SIM_SUMMARY: FIRST cycle starts =3 LAST cycle =1215 CYCLES_USED=1213
+3. 
+
++----------------------------------------------------------------------------------------------+
+; Power Analyzer Summary                                                                       ;
++----------------------------------------+-----------------------------------------------------+
+; Power Analyzer Status                  ; Successful - Thu Nov 13 21:32:04 2025               ;
+; Quartus Prime Version                  ; 24.1std.0 Build 1077 03/04/2025 SC Standard Edition ;
+; Revision Name                          ; barel_shifter                                       ;
+; Top-level Entity Name                  ; shift_reg                                           ;
+; Family                                 ; Cyclone IV E                                        ;
+; Device                                 ; EP4CE115F29C7                                       ;
+; Power Models                           ; Final                                               ;
+; Total Thermal Power Dissipation        ; 133.99 mW                                           ;
+; Core Dynamic Thermal Power Dissipation ; 0.19 mW                                             ;
+; Core Static Thermal Power Dissipation  ; 98.48 mW                                            ;
+; I/O Thermal Power Dissipation          ; 35.32 mW                                            ;
+; Power Estimation Confidence            ; Low: user provided insufficient toggle rate data    ;
++----------------------------------------+-----------------------------------------------------+
+
