@@ -6,16 +6,22 @@ module tb_shift_reg;
     reg clk, reset;
     reg sValid;
     reg [3:0] in_bits;
-    reg [2:0] in_len;  // 0–4 allowed
+    reg [2:0] in_len;
 
     wire signed [3:0] decodedData;
     wire tvalid;
+	 // 256-bit encoded string
+    reg [255:0] encoded_bits;
 
     // Internal debug
     wire [MAX_CODE-1:0] shift_buf = uut.shift_buf;
     wire [3:0] bit_count           = uut.bit_count;
     wire shift_en_tb               = uut.u_fsm.shift_en;
-
+    // Counter for decoded codewords
+    integer codeword_count;
+	 integer i;
+    reg [3:0] chunk;
+    reg [2:0] chunk_len;
     // Instantiate DUT
     shift_reg #(.MAX_CODE(MAX_CODE)) uut (
         .clk(clk),
@@ -30,7 +36,7 @@ module tb_shift_reg;
     // Clock generation
     always #5 clk = ~clk;
 
-    // Compact display
+    // Display
     initial begin
         $display("Time(ns) | clk↑ | sValid | shift_en | in_bits | in_len | bit_count | shift_buf | tvalid | decodedData");
         forever begin
@@ -40,95 +46,66 @@ module tb_shift_reg;
         end
     end
 
-    // === Simplified, fixed-timing chunk sender ===
+    // Task to send a chunk
     task send_chunk(input [3:0] bits, input [2:0] len);
     begin
         in_bits = bits;
         in_len  = len;
-        @(posedge clk);  // stabilize
+        @(posedge clk);
         sValid = 1;
-        repeat (2) @(posedge clk);  // sValid = 1 for 2 clocks
+        repeat(2)@(posedge clk);
         sValid = 0;
-        repeat (6) @(posedge clk);  // idle 6 clocks
+        repeat (16) @(posedge clk);  // idle a few cycles
     end
     endtask
 
-    // === Test sequence: Huffman codes -8 … 7 ===
+    initial codeword_count = 0;
+
+    // Increment counter on tvalid
+    always @(posedge clk) begin
+        if (tvalid)
+            codeword_count = codeword_count + 1;
+    end
+
+    // === Send 256-bit encoded string as 4-bit chunks ===
     initial begin
         clk = 0;
         reset = 1;
         sValid = 0;
         in_bits = 0;
         in_len = 0;
+        codeword_count = 0;
 
-        // Reset
         #20 reset = 0;
 
-        // ------------------ Codes ------------------
-        // -8 : 111110010 → 4+4+1 bits
-        send_chunk(4'b1111, 3'd4);
-        send_chunk(4'b1001, 3'd4);
-        send_chunk(4'b0,    3'd1);
+        
+        encoded_bits = 256'b0001100101101001110001100110000100001101110000011110011101110100100100100011100110100000110000110100000001000011101110110111100110111001011100000111001100001010110100000011100110111100010011100100100000000101011011001101111011110111011001101111011010110000;
 
-        // -7 : 11111000 → 4+4
-        send_chunk(4'b1111, 3'd4);
-        send_chunk(4'b1000, 3'd4);
+       
 
-        // -6 : 1011000 → 4+3
-        send_chunk(4'b1011, 3'd4);
-        send_chunk(4'b000,  3'd3);
+        i = 255; // start from MSB
+        while (i >= 0) begin
+            if (i >= 3) chunk_len = 3'd4;
+            else         chunk_len = i + 1;
 
-        // -5 : 101101 → 4+2
-        send_chunk(4'b1011, 3'd4);
-        send_chunk(4'b01,   3'd2);
+            case (chunk_len)
+                3'd4: chunk = encoded_bits[i -: 4];
+                3'd3: chunk = encoded_bits[i -: 3];
+                3'd2: chunk = encoded_bits[i -: 2];
+                3'd1: chunk = encoded_bits[i -: 1];
+                default: chunk = 0;
+            endcase
 
-        // -4 : 10111 → 4+1
-        send_chunk(4'b1011, 3'd4);
-        send_chunk(4'b1,    3'd1);
+            send_chunk(chunk, chunk_len);
+            i = i - chunk_len;
+        end
 
-        // -3 : 1010 → 4
-        send_chunk(4'b1010, 3'd4);
+        // Wait a few cycles to finish decoding
+        repeat (50) @(posedge clk);
 
-        // -2 : 1101 → 4
-        send_chunk(4'b1101, 3'd4);
+        $display("=== 256-bit encoded string simulation done ===");
+        $display("Total codewords decoded: %0d", codeword_count);
 
-        // -1 : 1110 → 4
-        send_chunk(4'b1110, 3'd4);
-
-        // 0 : 0 → 1
-        send_chunk(4'b0,    3'd1);
-
-        // 1 : 100 → 3
-        send_chunk(4'b100,  3'd3);
-
-        // 2 : 1100 → 4
-        send_chunk(4'b1100, 3'd4);
-
-        // 3 : 11110 → 4+1
-        send_chunk(4'b1111, 3'd4);
-        send_chunk(4'b0,    3'd1);
-
-        // 4 : 111111 → 4+2
-        send_chunk(4'b1111, 3'd4);
-        send_chunk(4'b11,   3'd2);
-
-        // 5 : 1111101 → 4+3
-        send_chunk(4'b1111, 3'd4);
-        send_chunk(4'b101,  3'd3);
-
-        // 6 : 1011001 → 4+3
-        send_chunk(4'b1011, 3'd4);
-        send_chunk(4'b001,  3'd3);
-
-        // 7 : 111110011 → 4+4+1
-        send_chunk(4'b1111, 3'd4);
-        send_chunk(4'b1001, 3'd4);
-        send_chunk(4'b1,    3'd1);
-
-        // Wait a few cycles to ensure last decoding
-        repeat (20) @(posedge clk);
-
-        $display("=== All codewords tested with fixed timing ===");
         $finish;
     end
 endmodule
