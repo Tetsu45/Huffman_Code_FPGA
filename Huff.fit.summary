@@ -1,12 +1,12 @@
-Fitter Status : Successful - Thu Nov 13 12:54:50 2025
+Fitter Status : Successful - Thu Nov 13 13:20:56 2025
 Quartus Prime Version : 24.1std.0 Build 1077 03/04/2025 SC Standard Edition
 Revision Name : Huff
 Top-level Entity Name : shift_reg
 Family : Cyclone IV E
 Device : EP4CE115F29C7
 Timing Models : Final
-Total logic elements : 212 / 114,480 ( < 1 % )
-    Total combinational functions : 202 / 114,480 ( < 1 % )
+Total logic elements : 198 / 114,480 ( < 1 % )
+    Total combinational functions : 189 / 114,480 ( < 1 % )
     Dedicated logic registers : 43 / 114,480 ( < 1 % )
 Total registers : 43
 Total pins : 15 / 529 ( 3 % )
