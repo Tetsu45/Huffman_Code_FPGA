@@ -34,6 +34,15 @@ module shift_reg #(
     wire fsm_svalid;
 
     assign fsm_svalid = sValid;
+    // Define a wire for reversed bits
+    wire [MAX_CODE-1:0] in_bits_reversed;
+
+genvar i_gen;
+generate
+    for (i_gen = 0; i_gen < MAX_CODE; i_gen = i_gen + 1) begin : bit_reverse
+        assign in_bits_reversed[i_gen] = (i_gen < in_len) ? in_bits[in_len-1-i_gen] : 1'b0;
+    end
+endgenerate
 
     //--------------------------------------------------------
     // FSM Instantiation
@@ -78,38 +87,33 @@ module shift_reg #(
     // ==========================================================
     // Barrel-shift style bit buffer (Quartus-safe Verilog-2001)
     // ==========================================================
-    always @(posedge clk or posedge reset) begin
+   always @(posedge clk or posedge reset) begin
     if (reset) begin
         shift_buf   <= {MAX_CODE{1'b0}};
         bit_count   <= 0;
         decodedData <= 0;
     end else begin
         // -----------------------------
-        // Load new bits into buffer
+        // Load or append new bits
         // -----------------------------
         if (load_bits && (bit_count + in_len <= MAX_CODE) && (in_len != 0)) begin
-            in_masked = in_bits & ((1 << in_len) - 1); // keep only valid input bits
-
             if (bit_count == 0) begin
-                // Buffer empty → load at MSB downward
-                shift_buf <= in_masked << (MAX_CODE - in_len);
+                // Buffer empty → load reversed input at LSB side
+                shift_buf <= in_bits_reversed;
             end else begin
-                // Buffer has bits → append after existing valid bits
-                // Existing bits occupy [MAX_CODE-1 : MAX_CODE-bit_count]
-                shift_buf <= shift_buf | (in_masked << (MAX_CODE - bit_count - in_len));
+                // Buffer has bits → append reversed input after existing valid bits
+                shift_buf <= (shift_buf) | (in_bits_reversed << bit_count);
             end
-
             bit_count <= bit_count + in_len;
         end
 
         // -----------------------------
-        // Shift bits out (MSB side)
+        // Shift bits out (LSB side)
         // -----------------------------
         else if (shift_en && (bit_count >= shift_len) && (shift_len != 0)) begin
-            shift_buf <= shift_buf << shift_len;
+            shift_buf <= shift_buf >> shift_len;
             bit_count <= bit_count - shift_len;
         end
-		 
 
         // -----------------------------
         // FSM decoded output latch
