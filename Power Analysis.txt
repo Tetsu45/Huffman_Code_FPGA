@@ -10,8 +10,8 @@ FMax value
 This panel reports FMAX for every clock in the design, regardless of the user-specified clock periods.  FMAX is only computed for paths where the source and destination registers or ports are driven by the same clock.  Paths of different clocks, including generated clocks, are ignored.  For paths between a clock and its inversion, FMAX is computed as if the rising and falling edges are scaled along with FMAX, such that the duty cycle (in terms of a percentage) is maintained. Altera recommends that you always use clock constraints and other slack reports for sign-off analysis.
 
 2. SIM_SUMMARY: FIRST cycle starts =3 LAST cycle =1215 CYCLES_USED=1213
-3. 
 
+3. 
 +----------------------------------------------------------------------------------------------+
 ; Power Analyzer Summary                                                                       ;
 +----------------------------------------+-----------------------------------------------------+
@@ -28,4 +28,33 @@ This panel reports FMAX for every clock in the design, regardless of the user-sp
 ; I/O Thermal Power Dissipation          ; 35.32 mW                                            ;
 ; Power Estimation Confidence            ; Low: user provided insufficient toggle rate data    ;
 +----------------------------------------+-----------------------------------------------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Power Analyzer Settings                                                                                                                                                 ;
++------------------------------------------------------------------+--------------------------------------------------------------------------------------+---------------+
+; Option                                                           ; Setting                                                                              ; Default Value ;
++------------------------------------------------------------------+--------------------------------------------------------------------------------------+---------------+
+; Use smart compilation                                            ; Off                                                                                  ; Off           ;
+; Enable parallel Assembler and Timing Analyzer during compilation ; On                                                                                   ; On            ;
+; Enable compact report table                                      ; Off                                                                                  ; Off           ;
+; Default Power Toggle Rate                                        ; 12.5%                                                                                ; 12.5%         ;
+; Default Power Input I/O Toggle Rate                              ; 12.5%                                                                                ; 12.5%         ;
+; Use vectorless estimation                                        ; Off                                                                                  ; On            ;
+; Use Input Files                                                  ; On                                                                                   ; Off           ;
+; Power Analyzer Report Signal Activity                            ; On                                                                                   ; Off           ;
+; Power Analyzer Report Power Dissipation                          ; On                                                                                   ; Off           ;
+; Output Signal Activity File name                                 ; C:/Users/chern/Documents/Huffman Project/barel_shifter/simulation/questa/wdaefsg.saf ;               ;
+; Preset Cooling Solution                                          ; 23 MM HEAT SINK WITH 200 LFPM AIRFLOW                                                ;               ;
+; Board thermal model                                              ; None (CONSERVATIVE)                                                                  ;               ;
+; Filter Glitches in VCD File Reader                               ; On                                                                                   ; On            ;
+; Device Power Characteristics                                     ; TYPICAL                                                                              ; TYPICAL       ;
+; Automatically Compute Junction Temperature                       ; On                                                                                   ; On            ;
+; Specified Junction Temperature                                   ; 25                                                                                   ; 25            ;
+; Ambient Temperature                                              ; 25                                                                                   ; 25            ;
+; Use Custom Cooling Solution                                      ; Off                                                                                  ; Off           ;
+; Board Temperature                                                ; 25                                                                                   ; 25            ;
++------------------------------------------------------------------+--------------------------------------------------------------------------------------+---------------+
+
+
 
