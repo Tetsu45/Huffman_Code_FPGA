@@ -34,7 +34,7 @@ It reverses and buffers incoming 1–4 bits per clock cycle and coordinates with
  -Maintain real-time count of valid bits (bit_count)
  -Forward decoded symbols (decodedData) with a valid handshake (tvalid)
  
-#shift_reg process flow
+# shift_reg process flow
 ![SHIFT_REG](https://github.com/Tetsu45/Huffman_Code_FPGA/blob/barrel_shifter_decoder_reversed/huff_shift_page-0001.jpg)
 
 Key Features
@@ -124,7 +124,7 @@ In essence it controls when to load input bits, when to attempt symbol decoding,
     │   ┌─────────┐
     └───┤ S_OUTPUT│
         └─────────┘
-#Figure 1 FSM Diagram
+#  FSM Diagram
 ![FSM Diagram](https://raw.githubusercontent.com/Tetsu45/Huffman_Code_FPGA/barrel_shifter_decoder_reversed/fsm_huff_page-0001.jpg)
 
     
