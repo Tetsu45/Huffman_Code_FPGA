@@ -69,13 +69,16 @@ module tb_shift_reg;
 
     // === Send 256-bit encoded string as 4-bit chunks ===
     initial begin
+	      // VCD dump
+        $dumpfile("tb_shift_reg.vcd");
+        $dumpvars(0, tb_shift_reg);
         clk = 0;
         reset = 1;
         sValid = 0;
         in_bits = 0;
         in_len = 0;
         codeword_count = 0;
-
+          
         #20 reset = 0;
 
         
