@@ -37,12 +37,18 @@ module shift_reg #(
     // Define a wire for reversed bits
     wire [MAX_CODE-1:0] in_bits_reversed;
 
-genvar i_gen;
-generate
-    for (i_gen = 0; i_gen < MAX_CODE; i_gen = i_gen + 1) begin : bit_reverse
-        assign in_bits_reversed[i_gen] = (i_gen < in_len) ? in_bits[in_len-1-i_gen] : 1'b0;
+// Function to reverse lower `len` bits of `data`
+function automatic [MAX_CODE-1:0] reverse_bits;
+    input [MAX_CODE-1:0] data;
+    input [3:0] len;  // or appropriate width for your in_len
+    integer i;
+    begin
+        reverse_bits = {MAX_CODE{1'b0}};  // default all zeros
+        for (i = 0; i < len; i = i + 1)
+            reverse_bits[i] = data[len - 1 - i];
     end
-endgenerate
+endfunction
+assign in_bits_reversed = reverse_bits(in_bits, in_len);
 
     //--------------------------------------------------------
     // FSM Instantiation
