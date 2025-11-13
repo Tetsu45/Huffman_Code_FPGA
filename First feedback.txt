@@ -9,7 +9,6 @@ function [3:0] reverse_bits(input [3:0] data);
     reverse_bits = {data[0], data[1], data[2], data[3]};
 endfunction
 
-
 Then change the input masking line:
 
 in_masked = reverse_bits(in_bits) & ((1 << in_len) - 1);
@@ -31,3 +30,28 @@ if (load_bits && ...) begin
     in_masked = in_bits_reversed & ((1 << in_len) - 1);
     // ... rest of loading logic
 end
+
+
+
+3. Original Code (To be Replaced/Modified),New/Modified Code
+"(Near line 50, inside shift_reg module)",
+// Mask to keep only 'in_len' valid bits,// Mask to keep only 'in_len' valid bits
+reg [MAX_CODE-1:0] in_masked;,reg [MAX_CODE-1:0] in_masked;
+,// --- New: Logic to reverse the first 'in_len' input bits ---
+,reg [3:0] in_bits_reversed;
+,integer k;
+,
+,always @(*) begin
+,    in_bits_reversed = 4'b0;
+,"    // Reverse the input bits (in_bits[0] is the first bit, becomes MSB of the chunk)"
+,    for (k = 0; k < in_len; k = k + 1) begin
+,        // in_bits[k] (the (k+1)-th bit) goes to in_bits_reversed[in_len - 1 - k]
+,        in_bits_reversed[in_len - 1 - k] = in_bits[k];
+,    end
+,    // Mask the reversed bits for loading
+,   in_masked = in_bits_reversed;
+,end
+"(Near line 70, inside always @(posedge clk or posedge reset) block)",
+if (load_bits && (bit_count + in_len <= MAX_CODE) && (in_len != 0)) begin,if (load_bits && (bit_count + in_len <= MAX_CODE) && (in_len != 0)) begin
+in_masked = in_bits & ((1 << in_len) - 1); // keep only valid input bits,// in_masked is now computed combinatorially (see above block)
+if (bit_count == 0) begin,if (bit_count == 0) begin
