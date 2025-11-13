@@ -121,7 +121,8 @@ In essence it controls when to load input bits, when to attempt symbol decoding,
     │   ┌─────────┐
     └───┤ S_OUTPUT│
         └─────────┘
-        
+![FSM Diagram](https://raw.githubusercontent.com/Tetsu45/Huffman_Code_FPGA/barrel_shifter_decoder_reversed/fsm_huff_page-0001.jpg)
+
     
 
 
