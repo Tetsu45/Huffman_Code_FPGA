@@ -10,8 +10,8 @@ The system we used  accepts encoded bit sequences (1–4 bits at a time), aligns
 In this encoder the following modules were designed;
 
 1. shift_register(Top-level with internal FSM instantiation)
-   
-Buffers incoming bits, aligns variable-length Huffman codewords, and interfaces with FSM for load/shift control.
+
+Reverse and buffers incoming bits, aligns variable-length Huffman codewords, and interfaces with FSM for load/shift control.
 
 2. decoder_fsm
 It analyzes buffered bits, detects valid Huffman codewords, issues shift control, and produces decoded symbols.
@@ -27,12 +27,15 @@ Drives encoded input sequences, verifies all codewords (-8 → +7), and logs tim
 Functionality
 
 The shift_reg module acts as both the data path and control interface for the Huffman decoder.
-It buffers incoming 1–4 bits per clock cycle and coordinates with the FSM to:
+It reverses and buffers incoming 1–4 bits per clock cycle and coordinates with the FSM to:
 
- -Append new bits starting from a MSB position into the buffer (load_bits control)
+ -Append new bits starting from a LSB position into the buffer (load_bits control)
  -Remove bits once a valid symbol is decoded (shift_en control)
  -Maintain real-time count of valid bits (bit_count)
  -Forward decoded symbols (decodedData) with a valid handshake (tvalid)
+ 
+#shift_reg process flow
+![SHIFT_REG](https://github.com/Tetsu45/Huffman_Code_FPGA/blob/barrel_shifter_decoder_reversed/huff_shift_page-0001.jpg)
 
 Key Features
 
@@ -67,7 +70,7 @@ Bit Extraction Logic
 After a Huffman code match, the FSM shifts out decoded bits:
 
 else if (shift_en && (bit_count >= shift_len) && (shift_len != 0)) begin
-    shift_buf <= shift_buf << shift_len;
+    shift_buf <= shift_buf >> shift_len;
     bit_count <= bit_count - shift_len;
 end
 
@@ -121,6 +124,7 @@ In essence it controls when to load input bits, when to attempt symbol decoding,
     │   ┌─────────┐
     └───┤ S_OUTPUT│
         └─────────┘
+#Figure 1 FSM Diagram
 ![FSM Diagram](https://raw.githubusercontent.com/Tetsu45/Huffman_Code_FPGA/barrel_shifter_decoder_reversed/fsm_huff_page-0001.jpg)
 
     
@@ -133,6 +137,9 @@ The FSM checks the most-significant bits of `shift_buf` (`shift_buf[8:0]`) based
 - **3-bit codes:** `100` → symbol `+1`
 - **4-bit codes:** multiple patterns like `1010`, `1100`, etc.
 - **5- to 9-bit codes:** for extended range symbols (−8 to +7)
+
+# Overall Design
+![Design](https://github.com/Tetsu45/Huffman_Code_FPGA/blob/barrel_shifter_decoder_reversed/huff_page-0001.jpg)
 
                   tb_shift_reg.v
 
