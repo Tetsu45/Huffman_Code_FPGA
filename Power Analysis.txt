@@ -1,4 +1,47 @@
-1. 
+
+CALCULATIONS:
+--------------------
+SIM_SUMMARY: FIRST cycle starts =3 LAST cycle =1215 CYCLES_USED =  1213
+
+Execution Time:
+  = Number of Clock Cycles / Maximum Frequency
+  = 1,213 cycles / 198.57 × 10^6 Hz
+  = 6.109 × 10^-6 seconds
+  = 6.11 μs (microseconds)
+
+Energy Consumption:
+  = Power Consumption × Execution Time
+  = 133.99 × 10^-3 W × 6.109 × 10^-6 s
+  = 0.8188 × 10^-6 J
+  = 0.819 μJ (microjoules
+
+
+================================================================================
+BASELINE PERFORMANCE METRICS:
+--------------------
+1. Maximum Clock Frequency    : 198.57 MHz
+2. Power Consumption          : 133.99 mW
+3. Clock Cycles               : 1,213 cycles
+4. Execution Time             : 6.11 μs
+5. Energy Consumption         : 0.819 μJ
+
+================================================================================
+================================================================================
+SUMMARY TABLE:
+--------------------
++---------------------------+----------------+---------------------------+
+| Metric                    | Value          | Unit                      |
++---------------------------+----------------+---------------------------+
+| Maximum Frequency (Fmax)  | 198.57         | MHz                       |
+| Power Consumption         | 133.99         | mW                        |
+| Clock Cycles              | 1,213          | cycles                    |
+| Execution Time            | 6.11           | μs                        |
+| Energy Consumption        | 0.819          | μJ                        |
+| Throughput                | 18.17          | codewords/μs              |
++---------------------------+----------------+---------------------------+
+
+Note: Throughput = 111 codewords / 6.11 μs = 18.17 codewords/μs
+
 FMax value 
 +--------------------------------------------------+
 ; Slow 1200mV 85C Model Fmax Summary               ;
@@ -9,9 +52,8 @@ FMax value
 +------------+-----------------+------------+------+
 This panel reports FMAX for every clock in the design, regardless of the user-specified clock periods.  FMAX is only computed for paths where the source and destination registers or ports are driven by the same clock.  Paths of different clocks, including generated clocks, are ignored.  For paths between a clock and its inversion, FMAX is computed as if the rising and falling edges are scaled along with FMAX, such that the duty cycle (in terms of a percentage) is maintained. Altera recommends that you always use clock constraints and other slack reports for sign-off analysis.
 
-2. SIM_SUMMARY: FIRST cycle starts =3 LAST cycle =1215 CYCLES_USED=1213
 
-3. 
+
 +----------------------------------------------------------------------------------------------+
 ; Power Analyzer Summary                                                                       ;
 +----------------------------------------+-----------------------------------------------------+
