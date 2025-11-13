@@ -36,7 +36,7 @@ module decoder_fsm #(
     reg  [3:0]        match_len_reg;
 
     //--------------------------------------------------------
-    // Combinational match detection (bit-count aware lookup)
+    // Combinational match detection (bit-count aware lookup, LSB-first)
     //--------------------------------------------------------
     always @(*) begin
         match_flag_comb   = 1'b0;
@@ -44,75 +44,127 @@ module decoder_fsm #(
         match_len_comb    = 4'd0;
 
         // 1-bit code (need at least 1 bit)
-        if (bit_count >= 1 && shift_buf[8] == 1'b0) begin
+        if (bit_count >= 1 && shift_buf[0] == 1'b0) begin
             match_flag_comb   = 1'b1;
             match_symbol_comb = 4'sd0;
             match_len_comb    = 4'd1;
         end
-        
+
         // 3-bit codes (need at least 3 bits)
-        else if (bit_count >= 3 && shift_buf[8:6] == 3'b100) begin
+        else if (bit_count >= 3 && shift_buf[0 +: 3] == 3'b001) begin
             match_flag_comb   = 1'b1;
             match_symbol_comb = 4'sd1;
             match_len_comb    = 4'd3;
         end
-        
-        // 4-bit codes (need at least 4 bits)
-        else if (bit_count >= 4) begin
-            case (shift_buf[8:5])
-                4'b1010: begin match_flag_comb=1'b1; match_symbol_comb=-4'sd3; match_len_comb=4'd4; end
-                4'b1100: begin match_flag_comb=1'b1; match_symbol_comb= 4'sd2; match_len_comb=4'd4; end
-                4'b1101: begin match_flag_comb=1'b1; match_symbol_comb=-4'sd2; match_len_comb=4'd4; end
-                4'b1110: begin match_flag_comb=1'b1; match_symbol_comb=-4'sd1; match_len_comb=4'd4; end
-                default: match_flag_comb = 1'b0;
-            endcase
+// 4-bit codes (need at least 4 bits)
+else if (bit_count >= 4) begin
+    case (shift_buf[0 +: 4])
+        4'b0101: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb = -4'sd3;
+            match_len_comb    = 4'd4;
         end
-        
-        // 5-bit codes (need at least 5 bits)
-        if (!match_flag_comb && bit_count >= 5) begin
-            case (shift_buf[8:4])
-                5'b10111: begin match_flag_comb=1'b1; match_symbol_comb=-4'sd4; match_len_comb=4'd5; end
-                5'b11110: begin match_flag_comb=1'b1; match_symbol_comb= 4'sd3; match_len_comb=4'd5; end
-                default: match_flag_comb = 1'b0;
-            endcase
+        4'b0011: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb =  4'sd2;
+            match_len_comb    = 4'd4;
         end
-        
-        // 6-bit codes (need at least 6 bits)
-        if (!match_flag_comb && bit_count == 6) begin
-            case (shift_buf[8:3])
-                6'b101101: begin match_flag_comb=1'b1; match_symbol_comb=-4'sd5; match_len_comb=4'd6; end
-                6'b111111: begin match_flag_comb=1'b1; match_symbol_comb= 4'sd4; match_len_comb=4'd6; end
-                default: match_flag_comb = 1'b0;
-            endcase
+        4'b1011: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb = -4'sd2;
+            match_len_comb    = 4'd4;
         end
-        
-        // 7-bit codes (need at least 7 bits)
-        if (!match_flag_comb && bit_count == 7) begin
-            case (shift_buf[8:2])
-                7'b1011000: begin match_flag_comb=1'b1; match_symbol_comb=-4'sd6; match_len_comb=4'd7; end
-                7'b1011001: begin match_flag_comb=1'b1; match_symbol_comb= 4'sd6; match_len_comb=4'd7; end
-                7'b1111101: begin match_flag_comb=1'b1; match_symbol_comb= 4'sd5; match_len_comb=4'd7; end
-                default: match_flag_comb = 1'b0;
-            endcase
+        4'b0111: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb = -4'sd1;
+            match_len_comb    = 4'd4;
         end
-        
-        // 8-bit codes (need at least 8 bits)
-        if (!match_flag_comb && bit_count == 8) begin
-            if (shift_buf[8:1] == 8'b11111000) begin
-                match_flag_comb   = 1'b1;
-                match_symbol_comb = -4'sd7;
-                match_len_comb    = 4'd8;
-            end
+        default: match_flag_comb = 1'b0;
+    endcase
+end
+
+// 5-bit codes (need at least 5 bits)
+if (!match_flag_comb && bit_count >= 5) begin
+    case (shift_buf[0 +: 5])
+        5'b11101: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb = -4'sd4;
+            match_len_comb    = 4'd5;
         end
-        
-        // 9-bit codes (need exactly 9 bits)
-        if (!match_flag_comb && bit_count >= 9) begin
-            case (shift_buf[8:0])
-                9'b111110010: begin match_flag_comb=1'b1; match_symbol_comb=-4'sd8; match_len_comb=4'd9; end
-                9'b111110011: begin match_flag_comb=1'b1; match_symbol_comb= 4'sd7; match_len_comb=4'd9; end
-                default: match_flag_comb = 1'b0;
-            endcase
+        5'b01111: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb =  4'sd3;
+            match_len_comb    = 4'd5;
         end
+        default: match_flag_comb = 1'b0;
+    endcase
+end
+
+// 6-bit codes (need at least 6 bits)
+if (!match_flag_comb && bit_count >= 6) begin
+    case (shift_buf[0 +: 6])
+        6'b101101: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb = -4'sd5;
+            match_len_comb    = 4'd6;
+        end
+        6'b111111: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb =  4'sd4;
+            match_len_comb    = 4'd6;
+        end
+        default: match_flag_comb = 1'b0;
+    endcase
+end
+
+// 7-bit codes (need at least 7 bits)
+if (!match_flag_comb && bit_count >= 7) begin
+    case (shift_buf[0 +: 7])
+        7'b0001101: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb = -4'sd6;
+            match_len_comb    = 4'd7;
+        end
+        7'b1001101: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb =  4'sd6;
+            match_len_comb    = 4'd7;
+        end
+        7'b1011111: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb =  4'sd5;
+            match_len_comb    = 4'd7;
+        end
+        default: match_flag_comb = 1'b0;
+    endcase
+end
+
+// 8-bit codes (need at least 8 bits)
+if (!match_flag_comb && bit_count >= 8) begin
+    if (shift_buf[0 +: 8] == 8'b00011111) begin
+        match_flag_comb   = 1'b1;
+        match_symbol_comb = -4'sd7;
+        match_len_comb    = 4'd8;
+    end
+end
+
+// 9-bit codes (need at least 9 bits)
+if (!match_flag_comb && bit_count >= 9) begin
+    case (shift_buf[0 +: 9])
+        9'b010011111: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb = -4'sd8;
+            match_len_comb    = 4'd9;
+        end
+        9'b110011111: begin
+            match_flag_comb   = 1'b1;
+            match_symbol_comb =  4'sd7;
+            match_len_comb    = 4'd9;
+        end
+        default: match_flag_comb = 1'b0;
+    endcase
+end
+
     end
 
     //--------------------------------------------------------
