@@ -165,3 +165,10 @@ At runtime, the FSM takes the valid_window (top bit_count bits) and compares i
     reg signed [3:0] match_symbol;
 
     wire [MAX_CODE-1:0] valid_window = shift_buf << (MAX_CODE - bit_count);
+
+
+
+
+
+
+
