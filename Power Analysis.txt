@@ -13,7 +13,7 @@ Energy Consumption:
   = Power Consumption × Execution Time
   = 133.99 × 10^-3 W × 6.109 × 10^-6 s
   = 0.8188 × 10^-6 J
-  = 0.819 μJ (microjoules
+  = 0.819 μJ (microjoules)
 
 
 ================================================================================
